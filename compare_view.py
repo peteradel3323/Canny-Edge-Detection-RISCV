@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def save_comparison(file1, file2, width, height, output_name='comparison.png'):
+def save_comparison(file1, file2, width, height, output_name='data/comparison.png'):
     # قراءة البيانات
     img1 = np.fromfile(file1, dtype=np.uint8).reshape((height, width))
     img2 = np.fromfile(file2, dtype=np.uint8).reshape((height, width))
@@ -22,4 +22,4 @@ def save_comparison(file1, file2, width, height, output_name='comparison.png'):
     print(f"تم حفظ المقارنة بنجاح في ملف: {output_name}")
 
 # تشغيل
-save_comparison('data/test.raw', 'data/output.raw', 1200, 675)
+save_comparison('data/test.raw', 'data/output.raw', 1216, 704)
