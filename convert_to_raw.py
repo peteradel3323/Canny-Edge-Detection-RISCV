@@ -2,8 +2,8 @@ from PIL import Image
 import numpy as np
 
 # اسم الصورة الأصلية الخاصة بك
-input_filename = 'data/my_image.jpg' # تأكد من وضع صورتك في المجلد بهذا الاسم
-output_filename = 'data/test.raw'
+input_filename = 'data/filter_test.jpeg' # تأكد من وضع صورتك في المجلد بهذا الاسم
+output_filename = 'data/filter_test.raw'
 
 # فتح الصورة وتحويلها لـ Grayscale
 img = Image.open(input_filename).convert('L') 
