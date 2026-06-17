@@ -11,7 +11,7 @@ int main()
     // أبعاد الصورة الاختبارية (يمكنك تغييرها لاحقاً لتطابق صورتك الحقيقية)
     const int width = 1216;
     const int height = 704;
-    const char* input_filename = "data/sharp_out.raw"; // ضع صورتك بهذا الاسم بجانب ملف التشغيل
+    const char* input_filename = "data/filter_test.raw"; // ضع صورتك بهذا الاسم بجانب ملف التشغيل
 
     unsigned char* input_image = nullptr;
 
@@ -66,8 +66,8 @@ int main()
     // =================================================================
     // 4. حفظ النتائج في ملفات للمعاينة
     // =================================================================
-    write_raw_image("output_2d_blur.raw", width, height, output_2d.data());
-    write_raw_image("output_separable_blur.raw", width, height, output_separable.data());
+    write_raw_image("data/output_2d_blur.raw", width, height, output_2d.data());
+    write_raw_image("data/output_separable_blur.raw", width, height, output_separable.data());
 
     std::cout << "\nImages saved successfully. Check 'output_2d_blur.raw' and 'output_separable_blur.raw'." << std::endl;
 

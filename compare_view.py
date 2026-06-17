@@ -22,4 +22,4 @@ def save_comparison(file1, file2, width, height, output_name='data/comparison.pn
     print(f"تم حفظ المقارنة بنجاح في ملف: {output_name}")
 
 # تشغيل
-save_comparison('data/test.raw', 'data/output.raw', 1216, 704)
+save_comparison('output_separable_blur.raw', 'output_2d_blur.raw', 1216, 704)
