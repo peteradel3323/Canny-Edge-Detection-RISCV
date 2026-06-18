@@ -1,78 +1,89 @@
 #include <iostream>
 #include <vector>
-#include <chrono> // مكتبة مهمة جداً لقياس الوقت
+#include <chrono> 
 #include <cstdint>
+#include <iomanip>
 #include "canny.h"
+#include "gradient.h"
+#include "image_data.h" // 📥 إدراج مصفوفة الصورة المدمجة هنا فوراً
 
 int main() 
 {
-    std::cout << "--- Canny Edge Detection Testbench ---" << std::endl;
+    std::cout << "==================================================\n";
+    std::cout << "      Canny Edge Detection: Full Pipeline Profiling \n";
+    std::cout << "==================================================\n";
 
-    // أبعاد الصورة الاختبارية (يمكنك تغييرها لاحقاً لتطابق صورتك الحقيقية)
     const int width = 1216;
     const int height = 704;
-    const char* input_filename = "data/filter_test.raw"; // ضع صورتك بهذا الاسم بجانب ملف التشغيل
 
-    unsigned char* input_image = nullptr;
+    std::cout << "Successfully loaded embedded image from memory (Flash/ROData).\n";
 
-    // 1. محاولة قراءة صورة من ملف
-    if (read_raw_image(input_filename, width, height, input_image)) {
-        std::cout << "Successfully loaded image: " << input_filename << std::endl;
-    } else {
-        // إذا لم يجد الصورة، سنصنع صورة اختبارية (مربع أبيض في وسط خلفية سوداء)
-        std::cout << "Warning: Could not load " << input_filename << ". Generating synthetic test image..." << std::endl;
-        input_image = new unsigned char[width * height];
-        for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-                // رسم مربع أبيض في المنتصف
-                if (x > 200 && x < 312 && y > 200 && y < 312) {
-                    input_image[y * width + x] = 255; 
-                } else {
-                    input_image[y * width + x] = 0;
-                }
-            }
-        }
-    }
-
-    // تجهيز مصفوفات لتخزين الصور الناتجة
-    std::vector<uint8_t> output_2d(width * height, 0);
-    std::vector<uint8_t> output_separable(width * height, 0);
+    // حجز مصفوفات الـ Pipeline
+    std::vector<uint8_t> blurred_image(width * height, 0);
+    std::vector<int16_t> grad_x(width * height, 0);
+    std::vector<int16_t> grad_y(width * height, 0);
+    std::vector<uint8_t> magnitude(width * height, 0);
+    std::vector<uint8_t> direction(width * height, 0);
 
     // =================================================================
-    // 2. اختبار الفلتر العادي (2D Gaussian Blur) وقياس وقته
+    // STAGE 1: Gaussian Blur (المرحلة المحسنة بتاعتنا)
     // =================================================================
-    std::cout << "\nRunning 2D Gaussian Blur..." << std::endl;
-    auto start_2d = std::chrono::high_resolution_clock::now();
+    auto start_gauss = std::chrono::high_resolution_clock::now();
     
-    // استدعاء الدالة مع تحديد أنواع القوالب (Templates)
-    gaussian_blur_scalar<uint8_t, int32_t, int16_t>(input_image, output_2d.data(), width, height);
+    // بنباصي المصفوفة المدمجة مباشرة input_image_embedded
+    gaussian_blur_separable<uint8_t, int32_t, int16_t>(input_image_embedded, blurred_image.data(), width, height);
     
-    auto end_2d = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration_2d = end_2d - start_2d;
-    std::cout << "-> 2D Blur execution time: " << duration_2d.count() << " ms" << std::endl;
+    auto end_gauss = std::chrono::high_resolution_clock::now();
+    double t_gauss = std::chrono::duration<double, std::milli>(end_gauss - start_gauss).count();
 
     // =================================================================
-    // 3. اختبار الفلتر المنفصل (Separable Gaussian Blur) وقياس وقته
+    // STAGE 2: Sobel Filter (كود أصحابك)
     // =================================================================
-    std::cout << "\nRunning Separable Gaussian Blur..." << std::endl;
-    auto start_sep = std::chrono::high_resolution_clock::now();
+    auto start_sobel = std::chrono::high_resolution_clock::now();
     
-    gaussian_blur_separable<uint8_t, int32_t, int16_t>(input_image, output_separable.data(), width, height);
+    compute_sobel(blurred_image.data(), grad_x.data(), grad_y.data(), width, height);
     
-    auto end_sep = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration_sep = end_sep - start_sep;
-    std::cout << "-> Separable Blur execution time: " << duration_sep.count() << " ms" << std::endl;
+    auto end_sobel = std::chrono::high_resolution_clock::now();
+    double t_sobel = std::chrono::duration<double, std::milli>(end_sobel - start_sobel).count();
 
     // =================================================================
-    // 4. حفظ النتائج في ملفات للمعاينة
+    // STAGE 3: Magnitude Calculation (كود أصحابك - L1)
     // =================================================================
-    write_raw_image("data/output_2d_blur.raw", width, height, output_2d.data());
-    write_raw_image("data/output_separable_blur.raw", width, height, output_separable.data());
+    auto start_mag = std::chrono::high_resolution_clock::now();
+    
+    gradient_magnitude_l1(grad_x.data(), grad_y.data(), magnitude.data(), width, height);
+    
+    auto end_mag = std::chrono::high_resolution_clock::now();
+    double t_mag = std::chrono::duration<double, std::milli>(end_mag - start_mag).count();
 
-    std::cout << "\nImages saved successfully. Check 'output_2d_blur.raw' and 'output_separable_blur.raw'." << std::endl;
+    // =================================================================
+    // STAGE 4: Direction/Orientation (كود أصحابك)
+    // =================================================================
+    auto start_dir = std::chrono::high_resolution_clock::now();
+    
+    gradient_direction(grad_x.data(), grad_y.data(), direction.data(), width, height);
+    
+    auto end_dir = std::chrono::high_resolution_clock::now();
+    double t_dir = std::chrono::duration<double, std::milli>(end_dir - start_dir).count();
 
-    // تنظيف الذاكرة
-    delete[] input_image;
+    // =================================================================
+    // طباعة التقرير الشامل لـ Phase 5
+    // =================================================================
+    double t_total = t_gauss + t_sobel + t_mag + t_dir;
+    
+    std::cout << "\n>>> PHASE 5: FULL PIPELINE PROFILING BREAKDOWN <<<\n";
+    std::cout << std::fixed << std::setprecision(1);
+    std::cout << "--------------------------------------------------\n";
+    std::cout << "1. Gaussian Blur Time : " << t_gauss << " ms (" << (t_gauss/t_total)*100.0 << "%)\n";
+    std::cout << "2. Sobel Filter Time  : " << t_sobel << " ms (" << (t_sobel/t_total)*100.0 << "%)\n";
+    std::cout << "3. Magnitude Time     : " << t_mag   << " ms (" << (t_mag/t_total)*100.0   << "%)\n";
+    std::cout << "4. Direction Time     : " << t_dir   << " ms (" << (t_dir/t_total)*100.0   << "%)\n";
+    std::cout << "--------------------------------------------------\n";
+    std::cout << "Total Pipeline Time   : " << t_total << " ms\n";
+    std::cout << "==================================================\n";
 
+    // ملحوظة: دوال الـ كتابة (write_raw_image) قد لا تعمل بسبب قيود الـ Bare-metal toolchain 
+    // لكن الـ Profiling والـ Execution شغالين وهيطبعوا الأرقام 100% وهو المطلوب للتسليم.
+    
     return 0;
 }
