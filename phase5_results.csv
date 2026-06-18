@@ -1,0 +1,6 @@
+stage,time_ms,percent
+Gaussian,1.7872,23.7
+Sobel,4.1741,55.2
+Magnitude_L1,0.7056,9.3
+Magnitude_L2,0.6040,N/A
+Direction,0.8899,11.8
