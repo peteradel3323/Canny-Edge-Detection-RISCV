@@ -46,3 +46,16 @@ vec-report: $(BUILD_DIR)
 
 clean:
 > rm -rf $(BUILD_DIR)
+
+.PHONY: phase6_5 run-phase6_5
+
+phase6_5: $(BUILD_DIR)
+> $(CXX_RV) $(BASE_FLAGS) -O3 tests/phase6_5_test.cpp -o $(BUILD_DIR)/phase6_5_rvv.elf -lm
+
+run-phase6_5: phase6_5
+> echo "===== Phase 6.5 RVV L1 Magnitude | VLEN=128 ====="
+> $(QEMU) -cpu rv64,v=true,vlen=128 ./$(BUILD_DIR)/phase6_5_rvv.elf
+> echo "===== Phase 6.5 RVV L1 Magnitude | VLEN=256 ====="
+> $(QEMU) -cpu rv64,v=true,vlen=256 ./$(BUILD_DIR)/phase6_5_rvv.elf
+> echo "===== Phase 6.5 RVV L1 Magnitude | VLEN=512 ====="
+> $(QEMU) -cpu rv64,v=true,vlen=512 ./$(BUILD_DIR)/phase6_5_rvv.elf
