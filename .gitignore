@@ -82,3 +82,9 @@ blur_m4
 # تجاهل المجلدات الناتجة (لو فيه مجلدات)
 data/output.raw
 data/comparison.png
+
+# تجاهل ملفات الـ Benchmarks والـ RVV التنفيذية
+bench_*
+canny_rvv_*
+canny_gaussian_prof
+build.sh
