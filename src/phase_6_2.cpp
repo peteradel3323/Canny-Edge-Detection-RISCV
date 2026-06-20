@@ -101,6 +101,7 @@
     #define rvv_vreinterpret_u8(v) __riscv_vreinterpret_v_i8m2_u8m2(v)
 
     #define rvv_vse8 __riscv_vse8_v_u8m2
+    #define VSETVL_E32(n) __riscv_vsetvl_e32m8(n)
 
     #define VSETVL_E32(n) __riscv_vsetvl_e32m8(n)
 
@@ -145,6 +146,7 @@
     #define rvv_vreinterpret_u8(v) __riscv_vreinterpret_v_i8m1_u8m1(v)
 
     #define rvv_vse8 __riscv_vse8_v_u8m1
+    #define VSETVL_E32(n) __riscv_vsetvl_e32m4(n)
 
     #define VSETVL_E32(n) __riscv_vsetvl_e32m4(n)
 
