@@ -5,8 +5,8 @@
 #include <iomanip>
 #include "canny.h"
 #include "gradient.h"
-// #include "image_data.h" // 📥 Not needed anymore since we are reading from file!
-
+template <class PixelT, class AccumulatorT, class KernelT>
+void gaussian_blur_2d(const PixelT* __restrict input, PixelT* __restrict output, size_t width, size_t height);
 using namespace std;
 
 int main() 
