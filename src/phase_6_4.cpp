@@ -18,8 +18,8 @@
     #define rvv_vse32 __riscv_vse16_v_u16m8      
     #define rvv_vadd __riscv_vadd_vv_u16m8
     #define rvv_vmul __riscv_vmul_vx_u16m8
-    #define rvv_vdiv __riscv_vdivu_vx_u16m8        // Division for 2D kernel sum
-    #define rvv_vmv_v_x __riscv_vmv_v_x_u16m8     // Set vector to scalar (initialization)
+    #define rvv_vshift __riscv_vsrl_vx_u16m8      // Logical Shift for unsigned 16-bit
+    #define rvv_vmv_v_x __riscv_vmv_v_x_u16m8     
     #define rvv_vmax __riscv_vmax_vx_u16m8
     #define rvv_vmin __riscv_vmin_vx_u16m8
     #define rvv_vncvt_16(v, vl) (v)              
@@ -40,7 +40,7 @@
     #define rvv_vse32 __riscv_vse32_v_i32m8
     #define rvv_vadd __riscv_vadd_vv_i32m8
     #define rvv_vmul __riscv_vmul_vx_i32m8
-    #define rvv_vdiv __riscv_vdiv_vx_i32m8
+    #define rvv_vshift __riscv_vsra_vx_i32m8      // Arithmetic Shift for signed 32-bit
     #define rvv_vmv_v_x __riscv_vmv_v_x_i32m8
     #define rvv_vmax __riscv_vmax_vx_i32m8
     #define rvv_vmin __riscv_vmin_vx_i32m8
@@ -62,7 +62,7 @@
     #define rvv_vse32 __riscv_vse32_v_i32m4
     #define rvv_vadd __riscv_vadd_vv_i32m4
     #define rvv_vmul __riscv_vmul_vx_i32m4
-    #define rvv_vdiv __riscv_vdiv_vx_i32m4
+    #define rvv_vshift __riscv_vsra_vx_i32m4      // Arithmetic Shift for signed 32-bit
     #define rvv_vmv_v_x __riscv_vmv_v_x_i32m4
     #define rvv_vmax __riscv_vmax_vx_i32m4
     #define rvv_vmin __riscv_vmin_vx_i32m4
@@ -168,8 +168,12 @@ void gaussian_blur_2d(const PixelT* __restrict input, PixelT* __restrict output,
                 }
             }
 
-            // Normalize by dividing by the total matrix sum (273)
-            vint32_t v_div = rvv_vdiv(v_sum, GAUSSIAN_SUM, vl);
+            // -----------------------------------------------------------------
+            // NEW: Fixed-point Normalization (Replacing Division by 273)
+            // 240 / 65536 is approximately 1/273.06
+            // -----------------------------------------------------------------
+            vint32_t v_prod = rvv_vmul(v_sum, 240, vl);
+            vint32_t v_div  = rvv_vshift(v_prod, 16, vl); // Uses vsra or vsrl automatically
 
             // Clamp values between 0 and 255 to avoid pixel distortion
             #if GAUSS_LMUL != 4
