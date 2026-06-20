@@ -61,7 +61,7 @@ bool write_raw_image(const char* filename, int width, int height, const unsigned
 // 3. 2D Gaussian Blur SCALAR Implementation (Phase 6.2 - No Vectors)
 // ======================================================================
 template <class PixelT, class AccumulatorT, class KernelT>
-void gaussian_blur_separable(const PixelT* __restrict input, PixelT* __restrict output, size_t width, size_t height) {
+void gaussian_blur_2d(const PixelT* __restrict input, PixelT* __restrict output, size_t width, size_t height) {
     
     // Calculate padded dimensions to safely apply the 5x5 kernel
     size_t padded_width = width + 4;
@@ -96,8 +96,11 @@ void gaussian_blur_separable(const PixelT* __restrict input, PixelT* __restrict 
                 }
             }
             
-            // Normalize by dividing by the total matrix sum (273)
-            ActualAccumulatorT div = sum / GAUSSIAN_SUM;
+            // -----------------------------------------------------------------
+            // Fast Normalization Trick: Multiply by 240, Shift Right by 16
+            // Equivalent to dividing by 273 (240 / 65536 ≈ 1 / 273)
+            // -----------------------------------------------------------------
+            ActualAccumulatorT div = (sum * 240) >> 16;
             
             // Clamp values between 0 and 255 to avoid pixel distortion
             if (div < 0)   div = 0;
@@ -115,9 +118,9 @@ void gaussian_blur_separable(const PixelT* __restrict input, PixelT* __restrict 
 // =================================================================
 // 4. Explicit Template Instantiation
 // =================================================================
-template void gaussian_blur_separable<uint8_t, int32_t, int16_t>(
+template void gaussian_blur_2d<uint8_t, int32_t, int16_t>(
     const uint8_t* __restrict input, uint8_t* __restrict output, size_t width, size_t height
 );
-template void gaussian_blur_separable<uint8_t, uint16_t, int16_t>(
+template void gaussian_blur_2d<uint8_t, uint16_t, int16_t>(
     const uint8_t* __restrict input, uint8_t* __restrict output, size_t width, size_t height
 );
