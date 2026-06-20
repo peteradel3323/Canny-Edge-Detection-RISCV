@@ -5,7 +5,9 @@
 #include <iomanip>
 #include "canny.h"
 #include "gradient.h"
-#include "image_data.h" // 📥 إدراج مصفوفة الصورة المدمجة هنا فوراً
+// #include "image_data.h" // 📥 Not needed anymore since we are reading from file!
+
+using namespace std;
 
 int main() 
 {
@@ -16,7 +18,13 @@ int main()
     const int width = 1216;
     const int height = 704;
 
-    std::cout << "Successfully loaded embedded image from memory (Flash/ROData).\n";
+    // 1. Read the image from file (the function allocates memory for us)
+    unsigned char* input_image = nullptr;
+    if (!read_raw_image("data/test.raw", width, height, input_image)) {
+        std::cerr << "Error: Failed to read data/test.raw. Make sure the file exists!" << std::endl;
+        return -1;
+    }
+    cout << "Image read successfully from data/test.raw!" << std::endl;
 
     // حجز مصفوفات الـ Pipeline
     std::vector<uint8_t> blurred_image(width * height, 0);
@@ -30,8 +38,8 @@ int main()
     // =================================================================
     auto start_gauss = std::chrono::high_resolution_clock::now();
     
-    // بنباصي المصفوفة المدمجة مباشرة input_image_embedded
-    gaussian_blur_separable<uint8_t, int32_t, int16_t>(input_image_embedded, blurred_image.data(), width, height);
+    // بنباصي المصفوفة اللي قرأناها من الملف
+    gaussian_blur_separable<uint8_t, int32_t, int16_t>(input_image, blurred_image.data(), width, height);
     
     auto end_gauss = std::chrono::high_resolution_clock::now();
     double t_gauss = std::chrono::duration<double, std::milli>(end_gauss - start_gauss).count();
@@ -82,8 +90,15 @@ int main()
     std::cout << "Total Pipeline Time   : " << t_total << " ms\n";
     std::cout << "==================================================\n";
 
-    // ملحوظة: دوال الـ كتابة (write_raw_image) قد لا تعمل بسبب قيود الـ Bare-metal toolchain 
-    // لكن الـ Profiling والـ Execution شغالين وهيطبعوا الأرقام 100% وهو المطلوب للتسليم.
+    // =================================================================
+    // حفظ الصورة النهائية 
+    // =================================================================
+    // We are saving 'magnitude.data()' which is the final edge image
+    write_raw_image("data/output.raw", width, height, magnitude.data());
+    cout << "File saved successfully to data/output.raw!" << std::endl;
+    
+    // Free the dynamically allocated image memory
+    delete[] input_image;
     
     return 0;
 }
