@@ -19,7 +19,7 @@
         } \
     } while(0)
 
-// Test 1: Uniform Image (اختبار الصورة الموحدة الإضاءة)
+// Test 1: Uniform Image
 void test_uniform_image() {
     const int width = 16;
     const int height = 16;
@@ -32,7 +32,7 @@ void test_uniform_image() {
     }
 
     auto start_wall = std::chrono::high_resolution_clock::now();
-    gaussian_blur_separable<uint8_t, int32_t, int16_t>(input, output, width, height);
+    gaussian_blur_scalar<uint8_t, int32_t, int16_t>(input, output, width, height);
     auto end_wall = std::chrono::high_resolution_clock::now();
     
     std::chrono::duration<double, std::milli> wall_ms = end_wall - start_wall;
@@ -52,7 +52,7 @@ void test_uniform_image() {
     free(output);
 }
 
-// Test 2: All Black Image (اختبار الصورة السوداء بالكامل)
+// Test 2: All Black Image 
 void test_black_image() {
     const int width = 16;
     const int height = 16;
@@ -65,7 +65,7 @@ void test_black_image() {
     }
 
     auto start_wall = std::chrono::high_resolution_clock::now();
-    gaussian_blur_separable<uint8_t, int32_t, int16_t>(input, output, width, height);
+    gaussian_blur_scalar<uint8_t, int32_t, int16_t>(input, output, width, height);
     auto end_wall = std::chrono::high_resolution_clock::now();
 
     std::chrono::duration<double, std::milli> wall_ms = end_wall - start_wall;
@@ -82,7 +82,7 @@ void test_black_image() {
     free(output);
 }
 
-// Test 3: Impulse Symmetry (اختبار النبضة وتماثل انتشار التمويه)
+// Test 3: Impulse Symmetry 
 void test_impulse_symmetry() {
     const int width = 15;
     const int height = 15;
@@ -99,7 +99,7 @@ void test_impulse_symmetry() {
     input[cy * width + cx] = 255;
 
     auto start_wall = std::chrono::high_resolution_clock::now();
-    gaussian_blur_separable<uint8_t, int32_t, int16_t>(input, output, width, height);
+    gaussian_blur_scalar<uint8_t, int32_t, int16_t>(input, output, width, height);
     auto end_wall = std::chrono::high_resolution_clock::now();
 
     std::chrono::duration<double, std::milli> wall_ms = end_wall - start_wall;
