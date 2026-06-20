@@ -39,7 +39,7 @@ int main()
     auto start_gauss = std::chrono::high_resolution_clock::now();
     
     // بنباصي المصفوفة اللي قرأناها من الملف
-    gaussian_blur_separable<uint8_t, int32_t, int16_t>(input_image, blurred_image.data(), width, height);
+    gaussian_blur_2d<uint8_t, int32_t, int16_t>(input_image, blurred_image.data(), width, height);
     
     auto end_gauss = std::chrono::high_resolution_clock::now();
     double t_gauss = std::chrono::duration<double, std::milli>(end_gauss - start_gauss).count();

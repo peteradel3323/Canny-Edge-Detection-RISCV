@@ -67,3 +67,18 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+# تجاهل الملفات التنفيذية
+canny_app
+canny_exec
+blur_m1
+blur_m4
+
+# تجاهل ملفات الصور والبيانات الناتجة
+*.raw
+*.png
+*.jpeg
+*.Zone.Identifier
+
+# تجاهل المجلدات الناتجة (لو فيه مجلدات)
+data/output.raw
+data/comparison.png
